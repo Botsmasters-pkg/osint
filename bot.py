@@ -623,7 +623,7 @@ async def check_user_force_channels(bot, uid: int):
 
 def force_join_markup() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        [[btn("✨ 🔵 Check Membership ⚡", "primary")]],
+        [[btn("✨ 👑 🔵 Check Membership ⚡", "primary")]],
         resize_keyboard=True,
     )
 
@@ -653,9 +653,9 @@ def build_force_join_ui():
     enabled_channels = [ch for ch in FORCE_CHANNELS.values() if ch.get("enabled", True)]
 
     col_styles = [
-        ("💎 🔵 Join", "primary"),  # Left: Premium Diamond (Primary Blue)
-        ("🔥 🔴 Join", "danger"),   # Middle: Animated Flame (Danger Red)
-        ("⚡ 🟢 Join", "success"),  # Right: Electric Bolt (Success Green)
+        ("💎 🔵 Join ⚡", "primary"),   # Left: Premium Diamond (Primary Blue)
+        ("🔥 🔴 Join ⚡", "danger"),    # Middle: Animated Flame (Danger Red)
+        ("🌟 🟢 Join ⚡", "success"),   # Right: Golden Star (Success Green)
     ]
 
     inline_rows = []
@@ -679,7 +679,7 @@ def build_force_join_ui():
     if current_row:
         inline_rows.append(current_row)
 
-    inline_rows.append([InlineKeyboardButton("✨ 🔵 Check Membership ⚡", callback_data="check_fsub", api_kwargs={"style": "primary"})])
+    inline_rows.append([InlineKeyboardButton("✨ 👑 🔵 Check Membership ⚡", callback_data="check_fsub", api_kwargs={"style": "primary"})])
     inline_kb = InlineKeyboardMarkup(inline_rows)
 
     return text, inline_kb
@@ -1105,7 +1105,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = (update.message.text or "").strip()
 
     # User Membership Verification Check button
-    if text in ("🔵 Check Membership", "Check Membership", "Verify", "/verify", "✨ 🔵 Check Membership ⚡"):
+    if any(k in text for k in ("Check Membership", "Verify", "/verify")):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if is_ok:
             await update.message.reply_text("✨ 🟢 <b>VERIFIED SUCCESSFULLY</b> 💎\n\n🚀 <i>Welcome! All VIP tools are now unlocked.</i>", parse_mode="HTML")
