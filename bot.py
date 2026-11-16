@@ -647,6 +647,8 @@ def build_force_join_ui():
 
     enabled_channels = [ch for ch in FORCE_CHANNELS.values() if ch.get("enabled", True)]
 
+    col_styles = ["primary", "danger", "success"]  # Left: Primary, Middle: Danger, Right: Success
+
     inline_rows = []
     current_row = []
     for ch in enabled_channels:
@@ -657,7 +659,11 @@ def build_force_join_ui():
                 url = f"https://t.me/{uname.lstrip('@')}"
             else:
                 url = "https://t.me/"
-        current_row.append(InlineKeyboardButton(text="Join", url=url, api_kwargs={"style": "primary"}))
+
+        col_idx = len(current_row)
+        btn_style = col_styles[col_idx]
+
+        current_row.append(InlineKeyboardButton(text="Join", url=url, api_kwargs={"style": btn_style}))
         if len(current_row) == 3:
             inline_rows.append(current_row)
             current_row = []
@@ -673,32 +679,26 @@ def build_force_join_ui():
 # ---------------- KEYBOARDS (100% MATCHING SCREENSHOT) ----------------
 def main_menu(uid: int = None) -> ReplyKeyboardMarkup:
     """
-    User Panel Menu Colors:
-    • Row 1: Har button PRIMARY (Blue)
-    • Row 2: Har button SUCCESS (Green)
-    • Row 3: Har button DANGER (Red)
-    • Row 4: Har button PRIMARY (Blue)
-    • Row 5: Har button SUCCESS (Green)
-    • Row 6: Har button DANGER (Red)
-    • Row 7: Primary (Blue) | Success (Green) | Danger (Red)
-    • Row 8: Primary (Blue) | Success (Green)
-    • Admin (if uid == ADMIN_ID): Danger (Red)
+    User Panel Menu Colors (Per 3-button Row):
+    • Left: PRIMARY (Blue)
+    • Middle: DANGER (Red)
+    • Right: SUCCESS (Green)
     """
     keyboard = [
-        # Row 1: PRIMARY (Blue)
-        [btn("🇮🇳 Number", "primary"), btn("🏎️ Vehicle", "primary"), btn("🏦 IFSC", "primary")],
-        # Row 2: SUCCESS (Green)
-        [btn("🌐 IP", "success"), btn("📮 PIN", "success"), btn("🏬 GST", "success")],
-        # Row 3: DANGER (Red)
-        [btn("🆔 Aadhaar", "danger"), btn("🐙 GitHub", "danger"), btn("👻 Snapchat", "danger")],
-        # Row 4: PRIMARY (Blue)
-        [btn("📱 Truecaller", "primary"), btn("🇵🇰 Pakistan No", "primary"), btn("🔢 Vehicle to Num", "primary")],
-        # Row 5: SUCCESS (Green)
-        [btn("🆔 TG to Number", "success"), btn("💰 UPI Info", "success"), btn("💳 Aadhaar to PAN", "success")],
-        # Row 6: DANGER (Red)
-        [btn("💳 My Credits", "danger"), btn("👤 Profile", "danger"), btn("🆘 Support", "danger")],
-        # Row 7: Primary | Success | Danger
-        [btn("🎰 Daily Spin", "primary"), btn("🎁 CLAIM GIFT", "success"), btn("🔗 REFERRAL", "danger")],
+        # Row 1: Left=Primary, Middle=Danger, Right=Success
+        [btn("🇮🇳 Number", "primary"), btn("🏎️ Vehicle", "danger"), btn("🏦 IFSC", "success")],
+        # Row 2: Left=Primary, Middle=Danger, Right=Success
+        [btn("🌐 IP", "primary"), btn("📮 PIN", "danger"), btn("🏬 GST", "success")],
+        # Row 3: Left=Primary, Middle=Danger, Right=Success
+        [btn("🆔 Aadhaar", "primary"), btn("🐙 GitHub", "danger"), btn("👻 Snapchat", "success")],
+        # Row 4: Left=Primary, Middle=Danger, Right=Success
+        [btn("📱 Truecaller", "primary"), btn("🇵🇰 Pakistan No", "danger"), btn("🔢 Vehicle to Num", "success")],
+        # Row 5: Left=Primary, Middle=Danger, Right=Success
+        [btn("🆔 TG to Number", "primary"), btn("💰 UPI Info", "danger"), btn("💳 Aadhaar to PAN", "success")],
+        # Row 6: Left=Primary, Middle=Danger, Right=Success
+        [btn("💳 My Credits", "primary"), btn("👤 Profile", "danger"), btn("🆘 Support", "success")],
+        # Row 7: Left=Primary, Middle=Danger, Right=Success
+        [btn("🎰 Daily Spin", "primary"), btn("🔗 REFERRAL", "danger"), btn("🎁 CLAIM GIFT", "success")],
         # Row 8: Primary (Blue) | Success (Green)
         [btn("💳 Buy Points", "primary"), btn("🏆 Leaderboard", "success")],
     ]
