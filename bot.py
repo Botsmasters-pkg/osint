@@ -653,9 +653,8 @@ def build_force_join_ui(missing: list):
     inline_rows = []
     current_row = []
     for ch in missing:
-        title = ch.get("channel_title") or "Channel"
         url = ch.get("join_url") or "https://t.me/"
-        current_row.append(InlineKeyboardButton(text=str(title), url=url))
+        current_row.append(InlineKeyboardButton(text="Join", url=url))
         if len(current_row) == 3:
             inline_rows.append(current_row)
             current_row = []
