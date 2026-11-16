@@ -51,7 +51,7 @@ def get_int_env(key: str, default: int) -> int:
 
 
 # ==================== CONFIGURATION ====================
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "8897974911:AAGrQvMDZ7keFTdATN9h5Bv5mwAHTaMKF20"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or base64.b64decode(b"ODk1MDUzODM5OTpBQUhkeTFHWV8tb3hmc0hOZi1VYVQ4Q01ITklubHpiTDhqWQ==").decode("utf-8")
 ADMIN_ID = get_int_env("ADMIN_ID", 8710308658)
 STORAGE_CHAT_ID = get_int_env("STORAGE_CHAT_ID", -1003946288718)
 
@@ -112,12 +112,12 @@ REFERRALS = {}        # user_id -> list of referred user_ids
 LAST_SPIN = {}        # user_id -> timestamp of last daily spin
 USER_SEARCHES = {}    # user_id -> count of successful searches used
 DEFAULT_FORCE_CHANNELS = {
-    -1003985707693: {
-        "channel_id": -1003985707693,
-        "channel_title": "Toxic",
-        "channel_username": "hackerjantaparty",
+    -1003346418146: {
+        "channel_id": -1003346418146,
+        "channel_title": "TOXIC ADMIN",
+        "channel_username": "TOXIC_ADMINN",
         "channel_type": "Public",
-        "join_url": "https://t.me/hackerjantaparty",
+        "join_url": "https://t.me/TOXIC_ADMINN",
         "enabled": True,
         "added_time": "2026-11-16 17:30:00 UTC",
     },
@@ -130,12 +130,12 @@ DEFAULT_FORCE_CHANNELS = {
         "enabled": True,
         "added_time": "2026-11-16 17:30:00 UTC",
     },
-    -1003346418146: {
-        "channel_id": -1003346418146,
-        "channel_title": "TOXIC ADMIN",
-        "channel_username": "TOXIC_ADMINN",
+    -1003985707693: {
+        "channel_id": -1003985707693,
+        "channel_title": "Toxic",
+        "channel_username": "hackerjantaparty",
         "channel_type": "Public",
-        "join_url": "https://t.me/TOXIC_ADMINN",
+        "join_url": "https://t.me/hackerjantaparty",
         "enabled": True,
         "added_time": "2026-11-16 17:30:00 UTC",
     },
@@ -148,15 +148,6 @@ DEFAULT_FORCE_CHANNELS = {
         "enabled": True,
         "added_time": "2026-11-16 17:30:00 UTC",
     },
-    -1003907422131: {
-        "channel_id": -1003907422131,
-        "channel_title": "TOXIC PANEL",
-        "channel_username": "toxicpannel",
-        "channel_type": "Public",
-        "join_url": "https://t.me/toxicpannel",
-        "enabled": True,
-        "added_time": "2026-11-16 17:30:00 UTC",
-    },
     -1004341391561: {
         "channel_id": -1004341391561,
         "channel_title": "💰 Toxic Earn",
@@ -166,27 +157,27 @@ DEFAULT_FORCE_CHANNELS = {
         "enabled": True,
         "added_time": "2026-11-16 17:30:00 UTC",
     },
-    -1003856206139: {
-        "channel_id": -1003856206139,
-        "channel_title": "VIP Private 1",
-        "channel_username": None,
-        "channel_type": "Private",
-        "join_url": "https://t.me/+v3trFLwO_ApiYjBl",
-        "enabled": True,
-        "added_time": "2026-11-16 17:30:00 UTC",
-    },
     -1003401025877: {
         "channel_id": -1003401025877,
-        "channel_title": "VIP Private 2",
+        "channel_title": "Private Channel 1",
         "channel_username": None,
         "channel_type": "Private",
         "join_url": "https://t.me/+w3srvIZXZaI5MWI1",
         "enabled": True,
         "added_time": "2026-11-16 17:30:00 UTC",
     },
+    -1003856206139: {
+        "channel_id": -1003856206139,
+        "channel_title": "Private Channel 2",
+        "channel_username": None,
+        "channel_type": "Private",
+        "join_url": "https://t.me/+v3trFLwO_ApiYjBl",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
     -1004307092136: {
         "channel_id": -1004307092136,
-        "channel_title": "WIRESHARK",
+        "channel_title": "Private Request Channel",
         "channel_username": None,
         "channel_type": "Join Request",
         "join_url": "https://t.me/+PGWjFRPgke43MjM1",
@@ -253,6 +244,7 @@ RAW_ADMIN_LABELS = {
     "📊 STATS": "adm_stats",
     "⚙️ POINT SETTINGS": "adm_point_settings",
     "📢 FORCE CHANNELS": "adm_force_channels",
+    "🔵 📢 FORCE CHANNELS": "adm_force_channels",
     "💾 SAVE STATE": "adm_save",
     "⬅️ BACK": "adm_back",
     "🔙 BACK": "adm_back",
@@ -570,9 +562,12 @@ async def handle_http_health(reader: asyncio.StreamReader, writer: asyncio.Strea
 
 async def post_init(app: Application):
     port = int(os.environ.get("PORT", 8080))
-    server = await asyncio.start_server(handle_http_health, "0.0.0.0", port)
-    app.bot_data["render_server"] = server
-    logger.info(f"🚀 Render HTTP Health server listening on port {port}")
+    try:
+        server = await asyncio.start_server(handle_http_health, "0.0.0.0", port)
+        app.bot_data["render_server"] = server
+        logger.info(f"🚀 Render HTTP Health server listening on port {port}")
+    except OSError as e:
+        logger.warning(f"Could not bind HTTP health server to port {port}: {e}")
     await load_state_on_start(app.bot)
 
 
@@ -585,6 +580,27 @@ async def post_shutdown(app: Application):
 
 
 # ---------------- USER FORCE-JOIN VERIFICATION ----------------
+async def _check_single_channel(bot, uid: int, ch: dict) -> bool:
+    cid = ch["channel_id"]
+    ctype = ch.get("channel_type", "Public")
+
+    # Join Request channel: if user has already requested to join (pending in queue) -> INSTANT PASS!
+    if ctype == "Join Request":
+        if (uid, cid) in JOIN_REQUESTS:
+            return True
+
+    try:
+        member = await bot.get_chat_member(chat_id=cid, user_id=uid)
+        if member.status in ("creator", "administrator", "member"):
+            return True
+        elif member.status == "restricted" and getattr(member, "is_member", False):
+            return True
+    except Exception as e:
+        logger.warning(f"Bot membership check in {cid} ({ctype}): {e}")
+        return False
+    return False
+
+
 async def check_user_force_channels(bot, uid: int):
     if is_admin(uid):
         return True, []
@@ -593,34 +609,14 @@ async def check_user_force_channels(bot, uid: int):
     if not enabled_channels:
         return True, []
 
-    missing = []
-    for ch in enabled_channels:
-        cid = ch["channel_id"]
-        ctype = ch.get("channel_type", "Public")
+    sem = asyncio.Semaphore(4)
 
-        is_ok = False
-        if ctype == "Join Request":
-            if (uid, cid) in JOIN_REQUESTS:
-                is_ok = True
+    async def _sem_check(ch):
+        async with sem:
+            return await _check_single_channel(bot, uid, ch)
 
-        if not is_ok:
-            try:
-                member = await bot.get_chat_member(chat_id=cid, user_id=uid)
-                if member.status in ("creator", "administrator", "member"):
-                    is_ok = True
-                elif member.status == "restricted" and getattr(member, "is_member", False):
-                    is_ok = True
-            except Exception as e:
-                err_str = str(e).lower()
-                if "admin" in err_str or "rights" in err_str or "forbidden" in err_str or "not found" in err_str:
-                    logger.warning(f"Bot cannot check membership in {cid} ({e}). Bypassing this channel.")
-                    is_ok = True
-                else:
-                    is_ok = False
-
-        if not is_ok:
-            missing.append(ch)
-
+    results = await asyncio.gather(*[_sem_check(ch) for ch in enabled_channels])
+    missing = [ch for ch, ok in zip(enabled_channels, results) if not ok]
     return len(missing) == 0, missing
 
 
@@ -631,7 +627,7 @@ def force_join_markup() -> ReplyKeyboardMarkup:
     )
 
 
-def build_force_join_ui(missing: list):
+def build_force_join_ui():
     """
     User-facing force-join UI matching prompt specification:
     - Text:
@@ -640,9 +636,8 @@ def build_force_join_ui(missing: list):
       To use this bot, please join all the channels below.
 
       👇 JOIN ALL CHANNELS FIRST</code>
-    - 3 × 3 Grid (3 buttons per row) of clickable channel Join buttons.
-    - Below buttons: '🔵 Check Membership' inline button.
-    - Reply keyboard: '🔵 Check Membership'.
+    - Exactly 8 clickable channel Join buttons arranged in a 3 × 3 grid.
+    - Exactly ONE single '🔵 Check Membership' inline button below the grid.
     """
     text = (
         "<code>🔒 ACCESS RESTRICTED\n\n"
@@ -650,22 +645,29 @@ def build_force_join_ui(missing: list):
         "👇 JOIN ALL CHANNELS FIRST</code>"
     )
 
+    enabled_channels = [ch for ch in FORCE_CHANNELS.values() if ch.get("enabled", True)]
+
     inline_rows = []
     current_row = []
-    for ch in missing:
-        url = ch.get("join_url") or "https://t.me/"
-        current_row.append(InlineKeyboardButton(text="Join", url=url))
+    for ch in enabled_channels:
+        url = ch.get("join_url") or ""
+        if not url.startswith("http://") and not url.startswith("https://"):
+            uname = ch.get("channel_username")
+            if uname:
+                url = f"https://t.me/{uname.lstrip('@')}"
+            else:
+                url = "https://t.me/"
+        current_row.append(InlineKeyboardButton(text="Join", url=url, api_kwargs={"style": "primary"}))
         if len(current_row) == 3:
             inline_rows.append(current_row)
             current_row = []
     if current_row:
         inline_rows.append(current_row)
 
-    inline_rows.append([InlineKeyboardButton("🔵 Check Membership", callback_data="check_fsub")])
+    inline_rows.append([InlineKeyboardButton("🔵 Check Membership", callback_data="check_fsub", api_kwargs={"style": "primary"})])
     inline_kb = InlineKeyboardMarkup(inline_rows)
-    reply_kb = force_join_markup()
 
-    return text, inline_kb, reply_kb
+    return text, inline_kb
 
 
 # ---------------- KEYBOARDS (100% MATCHING SCREENSHOT) ----------------
@@ -725,7 +727,7 @@ def admin_menu() -> ReplyKeyboardMarkup:
         # Row 8: Maintenance & Stats (Danger / Success)
         [btn(sc("🛠 MAINTENANCE"), "danger"), btn(sc("📊 STATS"), "success")],
         # Row 9: Point & Channel Settings (Primary / Primary)
-        [btn(sc("⚙️ POINT SETTINGS"), "primary"), btn(sc("📢 FORCE CHANNELS"), "primary")],
+        [btn(sc("⚙️ POINT SETTINGS"), "primary"), btn(sc("🔵 📢 FORCE CHANNELS"), "primary")],
         # Row 10: State & Navigation (Success / Danger)
         [btn(sc("💾 SAVE STATE"), "success"), btn(sc("🏠 MAIN MENU"), "danger")],
     ], resize_keyboard=True)
@@ -1029,7 +1031,7 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(u.id):
         is_ok, missing = await check_user_force_channels(ctx.bot, u.id)
         if not is_ok:
-            text_msg, inline_kb, reply_kb = build_force_join_ui(missing)
+            text_msg, inline_kb = build_force_join_ui()
             try:
                 await update.message.reply_html(
                     text_msg,
@@ -1042,7 +1044,6 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     reply_markup=inline_kb,
                     disable_web_page_preview=True,
                 )
-            await update.message.reply_text("Neeche button se verify karein:", reply_markup=reply_kb)
             return
 
     if MAINTENANCE and not is_admin(u.id):
@@ -1096,7 +1097,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("🟢 ✅ Verified")
             await update.message.reply_text("🤖 *TOXIC BOT READY*\n\nOption select karo:", reply_markup=main_menu(uid), parse_mode="Markdown")
         else:
-            text_msg, inline_kb, reply_kb = build_force_join_ui(missing)
+            text_msg, inline_kb = build_force_join_ui()
             try:
                 await update.message.reply_html(text_msg, reply_markup=inline_kb, disable_web_page_preview=True)
             except Exception:
@@ -1107,7 +1108,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(uid):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if not is_ok:
-            text_msg, inline_kb, reply_kb = build_force_join_ui(missing)
+            text_msg, inline_kb = build_force_join_ui()
             try:
                 await update.message.reply_html(text_msg, reply_markup=inline_kb, disable_web_page_preview=True)
             except Exception:
@@ -1136,7 +1137,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     # Force Channels Management Menu Actions (ADMIN-ONLY)
     if is_admin(uid):
-        if text in ("📢 FORCE CHANNELS", sc("📢 FORCE CHANNELS")):
+        if text in ("📢 FORCE CHANNELS", sc("📢 FORCE CHANNELS"), "🔵 📢 FORCE CHANNELS", sc("🔵 📢 FORCE CHANNELS")):
             await update.message.reply_text("📢 *FORCE CHANNELS*", reply_markup=force_channels_menu(), parse_mode="Markdown")
             return
         if text in ("➕ Add Channel", "🟢 ➕ Add Channel"):
@@ -2537,13 +2538,14 @@ async def on_callback_query(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
             except Exception:
                 pass
         else:
-            text_msg, inline_kb, _ = build_force_join_ui(missing)
+            text_msg, inline_kb = build_force_join_ui()
             try:
                 await q.message.edit_text(text_msg, reply_markup=inline_kb, parse_mode="HTML", disable_web_page_preview=True)
             except Exception:
                 pass
             try:
-                await q.answer("⚠️ Please join all channels first!", show_alert=True)
+                rem = len(missing)
+                await q.answer(f"⚠️ {rem} channel(s) remaining! Please join and click again.", show_alert=True)
             except Exception:
                 pass
         return
@@ -2798,6 +2800,8 @@ def main():
     app = (
         Application.builder()
         .token(BOT_TOKEN)
+        .connection_pool_size(64)
+        .pool_timeout(10.0)
         .post_init(post_init)
         .post_shutdown(post_shutdown)
         .build()
