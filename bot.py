@@ -623,7 +623,7 @@ async def check_user_force_channels(bot, uid: int):
 
 def force_join_markup() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        [[btn("🔵 Check Membership", "primary")]],
+        [[btn("✨ 🔵 Check Membership ⚡", "primary")]],
         resize_keyboard=True,
     )
 
@@ -1053,6 +1053,11 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                     reply_markup=inline_kb,
                     disable_web_page_preview=True,
                 )
+            await update.message.reply_text(
+                "⚡️ <i>Tap below to verify after joining:</i>",
+                reply_markup=force_join_markup(),
+                parse_mode="HTML",
+            )
             return
 
     if MAINTENANCE and not is_admin(u.id):
@@ -1103,7 +1108,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if text in ("🔵 Check Membership", "Check Membership", "Verify", "/verify", "✨ 🔵 Check Membership ⚡"):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if is_ok:
-            await update.message.reply_text("🟢 ✅ Verified")
+            await update.message.reply_text("✨ 🟢 <b>VERIFIED SUCCESSFULLY</b> 💎\n\n🚀 <i>Welcome! All VIP tools are now unlocked.</i>", parse_mode="HTML")
             await update.message.reply_text("🤖 *TOXIC BOT READY*\n\nOption select karo:", reply_markup=main_menu(uid), parse_mode="Markdown")
         else:
             text_msg, inline_kb = build_force_join_ui()
@@ -1111,6 +1116,11 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_html(text_msg, reply_markup=inline_kb, disable_web_page_preview=True)
             except Exception:
                 await update.message.reply_text("🔒 ACCESS RESTRICTED\n\nTo use this bot, please join all the channels below.\n\n👇 JOIN ALL CHANNELS FIRST", reply_markup=inline_kb, disable_web_page_preview=True)
+            await update.message.reply_text(
+                "⚡️ <i>Tap below to verify after joining:</i>",
+                reply_markup=force_join_markup(),
+                parse_mode="HTML",
+            )
         return
 
     # Check Force-Join for non-admins on any message
@@ -1122,6 +1132,11 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_html(text_msg, reply_markup=inline_kb, disable_web_page_preview=True)
             except Exception:
                 await update.message.reply_text("🔒 ACCESS RESTRICTED\n\nTo use this bot, please join all the channels below.\n\n👇 JOIN ALL CHANNELS FIRST", reply_markup=inline_kb, disable_web_page_preview=True)
+            await update.message.reply_text(
+                "⚡️ <i>Tap below to verify after joining:</i>",
+                reply_markup=force_join_markup(),
+                parse_mode="HTML",
+            )
             return
 
     # Admin state machine handling
