@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from datetime import datetime
 import io
 import json
