@@ -111,7 +111,90 @@ ADMIN_STATE = {}
 REFERRALS = {}        # user_id -> list of referred user_ids
 LAST_SPIN = {}        # user_id -> timestamp of last daily spin
 USER_SEARCHES = {}    # user_id -> count of successful searches used
-FORCE_CHANNELS = {}   # channel_id (int) -> dict
+DEFAULT_FORCE_CHANNELS = {
+    -1003985707693: {
+        "channel_id": -1003985707693,
+        "channel_title": "Toxic",
+        "channel_username": "hackerjantaparty",
+        "channel_type": "Public",
+        "join_url": "https://t.me/hackerjantaparty",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1003760598940: {
+        "channel_id": -1003760598940,
+        "channel_title": "Bot admin",
+        "channel_username": "botadminshere",
+        "channel_type": "Public",
+        "join_url": "https://t.me/botadminshere",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1003346418146: {
+        "channel_id": -1003346418146,
+        "channel_title": "TOXIC ADMIN",
+        "channel_username": "TOXIC_ADMINN",
+        "channel_type": "Public",
+        "join_url": "https://t.me/TOXIC_ADMINN",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1003831039531: {
+        "channel_id": -1003831039531,
+        "channel_title": "🤖 MORE BOT",
+        "channel_username": "BotXHere",
+        "channel_type": "Public",
+        "join_url": "https://t.me/BotXHere",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1003907422131: {
+        "channel_id": -1003907422131,
+        "channel_title": "TOXIC PANEL",
+        "channel_username": "toxicpannel",
+        "channel_type": "Public",
+        "join_url": "https://t.me/toxicpannel",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1004341391561: {
+        "channel_id": -1004341391561,
+        "channel_title": "💰 Toxic Earn",
+        "channel_username": "ToxicEarnTrick",
+        "channel_type": "Public",
+        "join_url": "https://t.me/ToxicEarnTrick",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1003856206139: {
+        "channel_id": -1003856206139,
+        "channel_title": "VIP Private 1",
+        "channel_username": None,
+        "channel_type": "Private",
+        "join_url": "https://t.me/+v3trFLwO_ApiYjBl",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1003401025877: {
+        "channel_id": -1003401025877,
+        "channel_title": "VIP Private 2",
+        "channel_username": None,
+        "channel_type": "Private",
+        "join_url": "https://t.me/+w3srvIZXZaI5MWI1",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+    -1004307092136: {
+        "channel_id": -1004307092136,
+        "channel_title": "WIRESHARK",
+        "channel_username": None,
+        "channel_type": "Join Request",
+        "join_url": "https://t.me/+PGWjFRPgke43MjM1",
+        "enabled": True,
+        "added_time": "2026-11-16 17:30:00 UTC",
+    },
+}
+FORCE_CHANNELS = {k: dict(v) for k, v in DEFAULT_FORCE_CHANNELS.items()}
 JOIN_REQUESTS = set() # set of (user_id, channel_id) tuples
 PENDING_PAYMENTS = {} # pay_id -> payment details dict
 STATE_MSG_ID = None   # Pinned state message id in storage channel
@@ -303,6 +386,7 @@ def serialize_state() -> str:
         "user_searches": {str(k): v for k, v in USER_SEARCHES.items()},
         "settings": SETTINGS,
         "force_channels": {str(k): v for k, v in FORCE_CHANNELS.items()},
+        "force_channels_initialized": True,
         "join_requests": [list(x) for x in JOIN_REQUESTS],
         "pending_payments": PENDING_PAYMENTS,
     }, ensure_ascii=False)
@@ -381,8 +465,12 @@ def load_state_from_text(txt: str) -> bool:
             SETTINGS["upi_id"] = os.getenv("UPI_ID", "pawank63599-1@okicici")
 
     FORCE_CHANNELS.clear()
-    for k, v in d.get("force_channels", {}).items():
-        FORCE_CHANNELS[int(k)] = v
+    if "force_channels_initialized" in d:
+        for k, v in d.get("force_channels", {}).items():
+            FORCE_CHANNELS[int(k)] = v
+    else:
+        for k, v in DEFAULT_FORCE_CHANNELS.items():
+            FORCE_CHANNELS[int(k)] = dict(v)
 
     JOIN_REQUESTS.clear()
     for item in d.get("join_requests", []):
