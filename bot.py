@@ -222,9 +222,34 @@ TOOLS = {
     "aadhar2pan":  ("💳 Aadhaar to PAN",  "aadhar2pan",   "Send the *Aadhaar number* to find PAN:"),
 }
 
-LABEL_TO_KEY = {label: k for k, (label, _, _) in TOOLS.items()}
+LABEL_TO_KEY = {}
+for k, (label, _, _) in TOOLS.items():
+    LABEL_TO_KEY[label] = k
+    LABEL_TO_KEY[f"🔵 {label}"] = k
+    LABEL_TO_KEY[f"🔴 {label}"] = k
+    LABEL_TO_KEY[f"🟢 {label}"] = k
+
 LABEL_TO_KEY["📞 Number"] = "num"
 LABEL_TO_KEY["🇮🇳 Number"] = "num"
+LABEL_TO_KEY["🔵 🇮🇳 Number"] = "num"
+LABEL_TO_KEY["🔴 🏎️ Vehicle"] = "veh"
+LABEL_TO_KEY["🟢 🏦 IFSC"] = "ifsc"
+LABEL_TO_KEY["🔵 🌐 IP"] = "ip"
+LABEL_TO_KEY["🔴 📮 PIN"] = "pincode"
+LABEL_TO_KEY["🟢 🏬 GST"] = "gst"
+LABEL_TO_KEY["🔵 🆔 Aadhaar"] = "aadhar"
+LABEL_TO_KEY["🔴 🐙 GitHub"] = "github"
+LABEL_TO_KEY["🟢 👻 Snapchat"] = "snapchat"
+LABEL_TO_KEY["🔵 📱 Truecaller"] = "truecaller"
+LABEL_TO_KEY["🔴 🇵🇰 Pak Info"] = "pakinfo"
+LABEL_TO_KEY["🔴 🇵🇰 Pakistan No"] = "pakinfo"
+LABEL_TO_KEY["🟢 🔢 Veh to Num"] = "veh2num"
+LABEL_TO_KEY["🟢 🔢 Vehicle to Num"] = "veh2num"
+LABEL_TO_KEY["🔵 🆔 TG to Num"] = "tg"
+LABEL_TO_KEY["🔵 🆔 TG to Number"] = "tg"
+LABEL_TO_KEY["🔴 💰 UPI Info"] = "upi"
+LABEL_TO_KEY["🟢 💳 Aadhaar ➔ PAN"] = "aadhar2pan"
+LABEL_TO_KEY["🟢 💳 Aadhaar to PAN"] = "aadhar2pan"
 
 RAW_ADMIN_LABELS = {
     "🚫 BAN USER": "adm_ban",
@@ -253,6 +278,7 @@ RAW_ADMIN_LABELS = {
     "🏠 MAIN MENU": "adm_mainmenu",
     "🏠 Main Menu": "adm_mainmenu",
     "👑 ADMIN PANEL": "adm_panel",
+    "🔴 👑 ADMIN PANEL": "adm_panel",
 }
 
 ADMIN_LABELS = {}
@@ -688,31 +714,31 @@ def build_force_join_ui():
 # ---------------- KEYBOARDS (100% MATCHING SCREENSHOT) ----------------
 def main_menu(uid: int = None) -> ReplyKeyboardMarkup:
     """
-    User Panel Menu Colors (Per 3-button Row):
-    • Left: PRIMARY (Blue)
-    • Middle: DANGER (Red)
-    • Right: SUCCESS (Green)
+    User Panel Menu Colors & Animated Emojis (Per 3-button Row):
+    • Left (Col 1): 🔵 PRIMARY (Blue)
+    • Middle (Col 2): 🔴 DANGER (Red)
+    • Right (Col 3): 🟢 SUCCESS (Green)
     """
     keyboard = [
-        # Row 1: Left=Primary, Middle=Danger, Right=Success
-        [btn("🇮🇳 Number", "primary"), btn("🏎️ Vehicle", "danger"), btn("🏦 IFSC", "success")],
-        # Row 2: Left=Primary, Middle=Danger, Right=Success
-        [btn("🌐 IP", "primary"), btn("📮 PIN", "danger"), btn("🏬 GST", "success")],
-        # Row 3: Left=Primary, Middle=Danger, Right=Success
-        [btn("🆔 Aadhaar", "primary"), btn("🐙 GitHub", "danger"), btn("👻 Snapchat", "success")],
-        # Row 4: Left=Primary, Middle=Danger, Right=Success
-        [btn("📱 Truecaller", "primary"), btn("🇵🇰 Pakistan No", "danger"), btn("🔢 Vehicle to Num", "success")],
-        # Row 5: Left=Primary, Middle=Danger, Right=Success
-        [btn("🆔 TG to Number", "primary"), btn("💰 UPI Info", "danger"), btn("💳 Aadhaar to PAN", "success")],
-        # Row 6: Left=Primary, Middle=Danger, Right=Success
-        [btn("💳 My Credits", "primary"), btn("👤 Profile", "danger"), btn("🆘 Support", "success")],
-        # Row 7: Left=Primary, Middle=Danger, Right=Success
-        [btn("🎰 Daily Spin", "primary"), btn("🔗 REFERRAL", "danger"), btn("🎁 CLAIM GIFT", "success")],
-        # Row 8: Primary (Blue) | Success (Green)
-        [btn("💳 Buy Points", "primary"), btn("🏆 Leaderboard", "success")],
+        # Row 1: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 🇮🇳 Number", "primary"), btn("🔴 🏎️ Vehicle", "danger"), btn("🟢 🏦 IFSC", "success")],
+        # Row 2: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 🌐 IP", "primary"), btn("🔴 📮 PIN", "danger"), btn("🟢 🏬 GST", "success")],
+        # Row 3: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 🆔 Aadhaar", "primary"), btn("🔴 🐙 GitHub", "danger"), btn("🟢 👻 Snapchat", "success")],
+        # Row 4: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 📱 Truecaller", "primary"), btn("🔴 🇵🇰 Pak Info", "danger"), btn("🟢 🔢 Veh to Num", "success")],
+        # Row 5: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 🆔 TG to Num", "primary"), btn("🔴 💰 UPI Info", "danger"), btn("🟢 💳 Aadhaar ➔ PAN", "success")],
+        # Row 6: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 💳 My Credits", "primary"), btn("🔴 👤 Profile", "danger"), btn("🟢 🆘 Support", "success")],
+        # Row 7: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
+        [btn("🔵 🎰 Daily Spin", "primary"), btn("🔴 🔗 Referral", "danger"), btn("🟢 🎁 Claim Gift", "success")],
+        # Row 8: Primary (Blue) 🔵 | Success (Green) 🟢
+        [btn("🔵 💳 Buy Points", "primary"), btn("🟢 🏆 Leaderboard", "success")],
     ]
     if uid and is_admin(uid):
-        keyboard.append([btn("👑 ADMIN PANEL", "danger")])
+        keyboard.append([btn("🔴 👑 ADMIN PANEL", "danger")])
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 
@@ -1289,7 +1315,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # Daily Spin Button
-    if text in ("🎰 Daily Spin", "Daily Spin", "daily spin", "daily spi", "🎰 DAILY SPIN"):
+    if "Daily Spin" in text or "Spin" in text:
         now = time.time()
         last = LAST_SPIN.get(uid, 0)
         cooldown = 24 * 3600
@@ -1348,7 +1374,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # User Profile Button (VIP Badge & Progress Bar)
-    if text == "👤 Profile":
+    if "Profile" in text:
         total_refs = len(REFERRALS.get(uid, []))
         free_used = USER_SEARCHES.get(uid, 0)
         free_limit = SETTINGS.get("free_search_limit", 2)
@@ -1392,7 +1418,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # Leaderboard Button
-    if text in ("🏆 Leaderboard", "Leaderboard", sc("🏆 LEADERBOARD")):
+    if "Leaderboard" in text:
         sorted_users = sorted(
             list(USERS),
             key=lambda x: len(REFERRALS.get(x, [])),
@@ -1426,7 +1452,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # User Support Button
-    if text == "🆘 Support":
+    if "Support" in text:
         support_text = (
             "🆘 *SUPPORT & HELP*\n\n"
             "Kisi bhi problem, inquiry ya credit buy karne ke liye Admin se contact karein:\n"
@@ -1436,7 +1462,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # Referral Link Button
-    if text == "🔗 REFERRAL":
+    if "REFERRAL" in text or "Referral" in text:
         me = await ctx.bot.get_me()
         bot_uname = me.username
         ref_link = f"https://t.me/{bot_uname}?start=ref_{uid}"
@@ -1453,13 +1479,13 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # Claim Gift Button
-    if text in ("🎁 CLAIM GIFT", sc("🎁 CLAIM GIFT")):
+    if "CLAIM GIFT" in text or "Claim" in text or "Gift" in text:
         ctx.user_data["awaiting"] = "claim_gift"
         await update.message.reply_text("🎁 Send your gift code:", reply_markup=cancel_menu())
         return
 
     # My Credits Button
-    if text in ("💳 My Credits", sc("💰 MY CREDITS"), "💰 MY CREDITS"):
+    if "My Credits" in text or "Credits" in text:
         free_used = USER_SEARCHES.get(uid, 0)
         free_limit = SETTINGS.get("free_search_limit", 2)
         free_rem = max(0, free_limit - free_used)
@@ -1471,7 +1497,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         return
 
     # Buy Points Button
-    if text in ("💳 Buy Points", "Buy Points", "/buy", sc("💳 BUY POINTS")):
+    if "Buy Points" in text or text == "/buy":
         await start_buy_points(update.message, ctx, uid)
         return
 
