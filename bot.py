@@ -51,7 +51,7 @@ def get_int_env(key: str, default: int) -> int:
 
 
 # ==================== CONFIGURATION ====================
-BOT_TOKEN = os.getenv("BOT_TOKEN") or "8950538399:AAH9u6pYTt2YR2NNKmBjHd6OJuUBgLRY9rI"
+BOT_TOKEN = os.getenv("BOT_TOKEN") or "8897974911:AAGrQvMDZ7keFTdATN9h5Bv5mwAHTaMKF20"
 ADMIN_ID = get_int_env("ADMIN_ID", 8710308658)
 STORAGE_CHAT_ID = get_int_env("STORAGE_CHAT_ID", -1003946288718)
 
@@ -522,8 +522,13 @@ async def check_user_force_channels(bot, uid: int):
                     is_ok = True
                 elif member.status == "restricted" and getattr(member, "is_member", False):
                     is_ok = True
-            except Exception:
-                is_ok = False
+            except Exception as e:
+                err_str = str(e).lower()
+                if "admin" in err_str or "rights" in err_str or "forbidden" in err_str or "not found" in err_str:
+                    logger.warning(f"Bot cannot check membership in {cid} ({e}). Bypassing this channel.")
+                    is_ok = True
+                else:
+                    is_ok = False
 
         if not is_ok:
             missing.append(ch)
@@ -536,6 +541,44 @@ def force_join_markup() -> ReplyKeyboardMarkup:
         [[btn("🔵 Check Membership", "primary")]],
         resize_keyboard=True,
     )
+
+
+def build_force_join_ui(missing: list):
+    """
+    User-facing force-join UI matching prompt specification:
+    - Text:
+      <code>🔒 ACCESS RESTRICTED
+
+      To use this bot, please join all the channels below.
+
+      👇 JOIN ALL CHANNELS FIRST</code>
+    - 3 × 3 Grid (3 buttons per row) of clickable channel Join buttons.
+    - Below buttons: '🔵 Check Membership' inline button.
+    - Reply keyboard: '🔵 Check Membership'.
+    """
+    text = (
+        "<code>🔒 ACCESS RESTRICTED\n\n"
+        "To use this bot, please join all the channels below.\n\n"
+        "👇 JOIN ALL CHANNELS FIRST</code>"
+    )
+
+    inline_rows = []
+    current_row = []
+    for ch in missing:
+        title = ch.get("channel_title") or "Channel"
+        url = ch.get("join_url") or "https://t.me/"
+        current_row.append(InlineKeyboardButton(text=str(title), url=url))
+        if len(current_row) == 3:
+            inline_rows.append(current_row)
+            current_row = []
+    if current_row:
+        inline_rows.append(current_row)
+
+    inline_rows.append([InlineKeyboardButton("🔵 Check Membership", callback_data="check_fsub")])
+    inline_kb = InlineKeyboardMarkup(inline_rows)
+    reply_kb = force_join_markup()
+
+    return text, inline_kb, reply_kb
 
 
 # ---------------- KEYBOARDS (100% MATCHING SCREENSHOT) ----------------
@@ -616,11 +659,11 @@ def point_settings_menu() -> ReplyKeyboardMarkup:
 def force_channels_menu() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
-            [btn("➕ Add Channel", "success")],
-            [btn("📋 List Channels", "primary")],
-            [btn("🗑 Remove Channel", "danger")],
-            [btn("🔁 Enable/Disable Channel", "primary")],
-            [btn("🔙 Back", "danger")],
+            [btn("🟢 ➕ Add Channel", "success")],
+            [btn("🔵 📋 List Channels", "primary")],
+            [btn("🔴 🗑 Remove Channel", "danger")],
+            [btn("🔵 🔁 Enable/Disable Channel", "primary")],
+            [btn("🔵 🔙 Back", "primary")],
         ],
         resize_keyboard=True,
     )
@@ -899,19 +942,20 @@ async def start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     if not is_admin(u.id):
         is_ok, missing = await check_user_force_channels(ctx.bot, u.id)
         if not is_ok:
-            ch_links = "\n".join(
-                f"• [{ch['channel_title']}]({ch['join_url']}) ({ch['channel_type']})"
-                for ch in missing
-            )
-            await update.message.reply_text(
-                "🔒 *Access Restricted!*\n\n"
-                "You must join our required channels to use this bot:\n\n"
-                f"{ch_links}\n\n"
-                "After joining, tap *Check Membership* below:",
-                reply_markup=force_join_markup(),
-                parse_mode="Markdown",
-                disable_web_page_preview=True,
-            )
+            text_msg, inline_kb, reply_kb = build_force_join_ui(missing)
+            try:
+                await update.message.reply_html(
+                    text_msg,
+                    reply_markup=inline_kb,
+                    disable_web_page_preview=True,
+                )
+            except Exception:
+                await update.message.reply_text(
+                    "🔒 ACCESS RESTRICTED\n\nTo use this bot, please join all the channels below.\n\n👇 JOIN ALL CHANNELS FIRST",
+                    reply_markup=inline_kb,
+                    disable_web_page_preview=True,
+                )
+            await update.message.reply_text("Neeche button se verify karein:", reply_markup=reply_kb)
             return
 
     if MAINTENANCE and not is_admin(u.id):
@@ -959,43 +1003,28 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = (update.message.text or "").strip()
 
     # User Membership Verification Check button
-    if text in ("🔵 Check Membership", "Check Membership"):
+    if text in ("🔵 Check Membership", "Check Membership", "Verify", "/verify"):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if is_ok:
-            await update.message.reply_text("🟢 ✅ *Verified!*", parse_mode="Markdown")
+            await update.message.reply_text("🟢 ✅ Verified")
             await update.message.reply_text("🤖 *TOXIC BOT READY*\n\nOption select karo:", reply_markup=main_menu(uid), parse_mode="Markdown")
         else:
-            ch_links = "\n".join(
-                f"• [{ch['channel_title']}]({ch['join_url']}) ({ch['channel_type']})"
-                for ch in missing
-            )
-            await update.message.reply_text(
-                "⚠️ *You have not joined all required channels yet.*\n\n"
-                f"{ch_links}\n\n"
-                "Please join and click *Check Membership* below:",
-                reply_markup=force_join_markup(),
-                parse_mode="Markdown",
-                disable_web_page_preview=True,
-            )
+            text_msg, inline_kb, reply_kb = build_force_join_ui(missing)
+            try:
+                await update.message.reply_html(text_msg, reply_markup=inline_kb, disable_web_page_preview=True)
+            except Exception:
+                await update.message.reply_text("🔒 ACCESS RESTRICTED\n\nTo use this bot, please join all the channels below.\n\n👇 JOIN ALL CHANNELS FIRST", reply_markup=inline_kb, disable_web_page_preview=True)
         return
 
     # Check Force-Join for non-admins on any message
     if not is_admin(uid):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if not is_ok:
-            ch_links = "\n".join(
-                f"• [{ch['channel_title']}]({ch['join_url']}) ({ch['channel_type']})"
-                for ch in missing
-            )
-            await update.message.reply_text(
-                "🔒 *Access Restricted!*\n\n"
-                "You must join our required channels to use this bot:\n\n"
-                f"{ch_links}\n\n"
-                "After joining, tap *Check Membership* below:",
-                reply_markup=force_join_markup(),
-                parse_mode="Markdown",
-                disable_web_page_preview=True,
-            )
+            text_msg, inline_kb, reply_kb = build_force_join_ui(missing)
+            try:
+                await update.message.reply_html(text_msg, reply_markup=inline_kb, disable_web_page_preview=True)
+            except Exception:
+                await update.message.reply_text("🔒 ACCESS RESTRICTED\n\nTo use this bot, please join all the channels below.\n\n👇 JOIN ALL CHANNELS FIRST", reply_markup=inline_kb, disable_web_page_preview=True)
             return
 
     # Admin state machine handling
@@ -1560,8 +1589,9 @@ async def handle_fc_list(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     lines = ["📋 *FORCE CHANNELS*\n"]
     for cid, ch in FORCE_CHANNELS.items():
         status_icon = "✅" if ch.get("enabled", True) else "🚫"
+        safe_title = str(ch.get('channel_title', 'Channel')).replace('*', '').replace('_', ' ')
         lines.append(
-            f"{status_icon} *{ch.get('channel_title', 'Channel')}*\n"
+            f"{status_icon} *{safe_title}*\n"
             f"Type: {ch.get('channel_type', 'Public')}\n"
             f"ID: `{cid}`\n"
             f"Link: {ch.get('join_url', 'None')}\n"
@@ -1847,21 +1877,33 @@ async def handle_admin_input(update: Update, ctx, uid: int, txt: str):
                 await update.message.reply_text("Cancelled.", reply_markup=force_channels_menu())
                 return
 
-            cid, title = None, None
-            if update.message.forward_from_chat:
+            cid, title, uname = None, None, None
+            if update.message.forward_origin and hasattr(update.message.forward_origin, "chat"):
+                chat = update.message.forward_origin.chat
+                cid = chat.id
+                title = chat.title or str(cid)
+                uname = getattr(chat, "username", None)
+            elif update.message.forward_from_chat:
                 chat = update.message.forward_from_chat
                 cid = chat.id
                 title = chat.title or str(cid)
+                uname = getattr(chat, "username", None)
             else:
                 ref = txt.strip()
-                if ref.lstrip("-").isdigit():
+                if "t.me/" in ref:
+                    clean_ref = ref.split("t.me/")[-1].split("/")[0].split("?")[0].lstrip("@")
+                    target = f"@{clean_ref}"
+                elif ref.lstrip("-").isdigit():
                     target = int(ref)
+                elif not ref.startswith("@"):
+                    target = f"@{ref}"
                 else:
                     target = ref
                 try:
                     chat = await ctx.bot.get_chat(target)
                     cid = chat.id
                     title = chat.title or str(cid)
+                    uname = getattr(chat, "username", None)
                 except Exception as e:
                     await update.message.reply_text(
                         f"❌ Could not resolve channel: {e}\n"
@@ -1871,10 +1913,20 @@ async def handle_admin_input(update: Update, ctx, uid: int, txt: str):
                     )
                     return
 
+            if cid in FORCE_CHANNELS:
+                ADMIN_STATE.pop(uid, None)
+                await update.message.reply_text(
+                    f"⚠️ Channel *{title}* (`{cid}`) is already added!",
+                    parse_mode="Markdown",
+                    reply_markup=force_channels_menu(),
+                )
+                return
+
             ADMIN_STATE[uid] = {
                 "step": "fc_add_type",
                 "channel_id": cid,
                 "channel_title": title,
+                "channel_username": uname,
             }
 
             type_keyboard = ReplyKeyboardMarkup(
@@ -1907,9 +1959,10 @@ async def handle_admin_input(update: Update, ctx, uid: int, txt: str):
             state["channel_type"] = clean_type
             state["step"] = "fc_add_url"
 
+            hint = "e.g. `https://t.me/channel`" if clean_type == "Public" else "e.g. `https://t.me/+invitehash`"
             await update.message.reply_text(
                 f"Type: *{clean_type}*\n\n"
-                "Step 3: Please send the Join URL for this channel (e.g. `https://t.me/...`):",
+                f"Step 3: Please send the Join URL for this channel ({hint}):",
                 parse_mode="Markdown",
                 reply_markup=ReplyKeyboardMarkup([[btn("❌ Cancel", "danger")]], resize_keyboard=True),
             )
@@ -1922,14 +1975,26 @@ async def handle_admin_input(update: Update, ctx, uid: int, txt: str):
                 return
 
             join_url = txt.strip()
+            ctype = state["channel_type"]
+
+            if ctype == "Public":
+                if not join_url.startswith("http://") and not join_url.startswith("https://"):
+                    clean_u = join_url.lstrip("@").strip()
+                    join_url = f"https://t.me/{clean_u}"
+            else:
+                if not ("t.me/" in join_url or join_url.startswith("https://")):
+                    await update.message.reply_text("❌ Please enter a valid Telegram invite URL (e.g. `https://t.me/...`):")
+                    return
+
             cid = state["channel_id"]
             title = state["channel_title"]
-            ctype = state["channel_type"]
+            uname = state.get("channel_username")
             now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
 
             FORCE_CHANNELS[cid] = {
                 "channel_id": cid,
                 "channel_title": title,
+                "channel_username": uname,
                 "channel_type": ctype,
                 "join_url": join_url,
                 "enabled": True,
@@ -2371,6 +2436,31 @@ async def on_callback_query(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     data = q.data or ""
 
+    if data == "check_fsub":
+        uid = q.from_user.id
+        is_ok, missing = await check_user_force_channels(ctx.bot, uid)
+        if is_ok:
+            try:
+                await q.message.edit_text("🟢 ✅ Verified", parse_mode="HTML")
+            except Exception:
+                pass
+            await q.message.reply_text("🤖 *TOXIC BOT READY*\n\nOption select karo:", reply_markup=main_menu(uid), parse_mode="Markdown")
+            try:
+                await q.answer("🟢 ✅ Verified", show_alert=True)
+            except Exception:
+                pass
+        else:
+            text_msg, inline_kb, _ = build_force_join_ui(missing)
+            try:
+                await q.message.edit_text(text_msg, reply_markup=inline_kb, parse_mode="HTML", disable_web_page_preview=True)
+            except Exception:
+                pass
+            try:
+                await q.answer("⚠️ Please join all channels first!", show_alert=True)
+            except Exception:
+                pass
+        return
+
     if data.startswith("re_tool:"):
         key = data.split(":", 1)[1]
         if key in TOOLS:
@@ -2637,7 +2727,7 @@ def main():
 
     logger.info("Toxic Bot starting up...")
     print("🚀 Toxic Bot is running with Configurable Points, Free Searches & Result-Based Deductions!")
-    app.run_polling(drop_pending_updates=True)
+    app.run_polling(drop_pending_updates=True, allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
