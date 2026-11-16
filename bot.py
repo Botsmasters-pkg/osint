@@ -648,7 +648,11 @@ def build_force_join_ui():
 
     enabled_channels = [ch for ch in FORCE_CHANNELS.values() if ch.get("enabled", True)]
 
-    col_styles = ["primary", "danger", "success"]  # Left: Primary, Middle: Danger, Right: Success
+    col_styles = [
+        ("🔵 Join", "primary"),  # Left: Primary (Blue)
+        ("🔴 Join", "danger"),   # Middle: Danger (Red)
+        ("🟢 Join", "success"),  # Right: Success (Green)
+    ]
 
     inline_rows = []
     current_row = []
@@ -662,9 +666,9 @@ def build_force_join_ui():
                 url = "https://t.me/"
 
         col_idx = len(current_row)
-        btn_style = col_styles[col_idx]
+        btn_text, btn_style = col_styles[col_idx]
 
-        current_row.append(InlineKeyboardButton(text="Join", url=url, api_kwargs={"style": btn_style}))
+        current_row.append(InlineKeyboardButton(text=btn_text, url=url, api_kwargs={"style": btn_style}))
         if len(current_row) == 3:
             inline_rows.append(current_row)
             current_row = []
