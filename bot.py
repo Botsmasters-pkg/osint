@@ -641,17 +641,21 @@ def build_force_join_ui():
     - Exactly ONE single '🔵 Check Membership' inline button below the grid.
     """
     text = (
+        "⚡️ <b>VIP NETWORK VERIFICATION</b> ⚡️\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
         "<code>🔒 ACCESS RESTRICTED\n\n"
         "To use this bot, please join all the channels below.\n\n"
-        "👇 JOIN ALL CHANNELS FIRST</code>"
+        "👇 JOIN ALL CHANNELS FIRST</code>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "💎 <i>Status: Verification Required</i>"
     )
 
     enabled_channels = [ch for ch in FORCE_CHANNELS.values() if ch.get("enabled", True)]
 
     col_styles = [
-        ("🔵 Join", "primary"),  # Left: Primary (Blue)
-        ("🔴 Join", "danger"),   # Middle: Danger (Red)
-        ("🟢 Join", "success"),  # Right: Success (Green)
+        ("💎 🔵 Join", "primary"),  # Left: Premium Diamond (Primary Blue)
+        ("🔥 🔴 Join", "danger"),   # Middle: Animated Flame (Danger Red)
+        ("⚡ 🟢 Join", "success"),  # Right: Electric Bolt (Success Green)
     ]
 
     inline_rows = []
@@ -675,7 +679,7 @@ def build_force_join_ui():
     if current_row:
         inline_rows.append(current_row)
 
-    inline_rows.append([InlineKeyboardButton("🔵 Check Membership", callback_data="check_fsub", api_kwargs={"style": "primary"})])
+    inline_rows.append([InlineKeyboardButton("✨ 🔵 Check Membership ⚡", callback_data="check_fsub", api_kwargs={"style": "primary"})])
     inline_kb = InlineKeyboardMarkup(inline_rows)
 
     return text, inline_kb
@@ -1096,7 +1100,7 @@ async def on_text(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     text = (update.message.text or "").strip()
 
     # User Membership Verification Check button
-    if text in ("🔵 Check Membership", "Check Membership", "Verify", "/verify"):
+    if text in ("🔵 Check Membership", "Check Membership", "Verify", "/verify", "✨ 🔵 Check Membership ⚡"):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if is_ok:
             await update.message.reply_text("🟢 ✅ Verified")
@@ -2534,12 +2538,12 @@ async def on_callback_query(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         is_ok, missing = await check_user_force_channels(ctx.bot, uid)
         if is_ok:
             try:
-                await q.message.edit_text("🟢 ✅ Verified", parse_mode="HTML")
+                await q.message.edit_text("✨ 🟢 <b>VERIFIED SUCCESSFULLY</b> 💎\n\n🚀 <i>Welcome! All VIP tools are now unlocked.</i>", parse_mode="HTML")
             except Exception:
                 pass
             await q.message.reply_text("🤖 *TOXIC BOT READY*\n\nOption select karo:", reply_markup=main_menu(uid), parse_mode="Markdown")
             try:
-                await q.answer("🟢 ✅ Verified", show_alert=True)
+                await q.answer("✨ 🟢 Access Granted! Welcome.", show_alert=True)
             except Exception:
                 pass
         else:
