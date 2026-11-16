@@ -2609,6 +2609,15 @@ async def on_callback_query(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 # ---------------- MAIN APPLICATION ----------------
 def main():
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
     app = (
         Application.builder()
         .token(BOT_TOKEN)
@@ -2632,4 +2641,12 @@ def main():
 
 
 if __name__ == "__main__":
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     main()
