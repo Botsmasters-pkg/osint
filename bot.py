@@ -214,7 +214,6 @@ TOOLS = {
     "aadhar":      ("🆔 Aadhaar",         "aadhar",       "Send the *Aadhaar number*:"),
     "github":      ("🐙 GitHub",          "github",       "Send the *GitHub username*:"),
     "snapchat":    ("👻 Snapchat",        "snapchat",     "Send the *Snapchat username*:"),
-    "truecaller":  ("📱 Truecaller",      "truecaller",   "Send the *phone number* for Truecaller:"),
     "pakinfo":     ("🇵🇰 Pakistan No",     "pak-info",     "Send the *Pakistan number* (e.g. 03001234567):"),
     "veh2num":     ("🔢 Vehicle to Num",  "veh2num",      "Send the *vehicle plate* (e.g. DL01AB1234):"),
     "tg":          ("🆔 TG to Number",     "tgnum",        "Send the *Telegram username or ID*:"),
@@ -240,13 +239,16 @@ LABEL_TO_KEY["🟢 🏬 GST"] = "gst"
 LABEL_TO_KEY["🔵 🆔 Aadhaar"] = "aadhar"
 LABEL_TO_KEY["🔴 🐙 GitHub"] = "github"
 LABEL_TO_KEY["🟢 👻 Snapchat"] = "snapchat"
-LABEL_TO_KEY["🔵 📱 Truecaller"] = "truecaller"
+LABEL_TO_KEY["🔵 🇵🇰 Pak Info"] = "pakinfo"
 LABEL_TO_KEY["🔴 🇵🇰 Pak Info"] = "pakinfo"
 LABEL_TO_KEY["🔴 🇵🇰 Pakistan No"] = "pakinfo"
+LABEL_TO_KEY["🔴 🔢 Veh to Num"] = "veh2num"
 LABEL_TO_KEY["🟢 🔢 Veh to Num"] = "veh2num"
 LABEL_TO_KEY["🟢 🔢 Vehicle to Num"] = "veh2num"
 LABEL_TO_KEY["🔵 🆔 TG to Num"] = "tg"
+LABEL_TO_KEY["🟢 🆔 TG to Num"] = "tg"
 LABEL_TO_KEY["🔵 🆔 TG to Number"] = "tg"
+LABEL_TO_KEY["🔵 💰 UPI Info"] = "upi"
 LABEL_TO_KEY["🔴 💰 UPI Info"] = "upi"
 LABEL_TO_KEY["🟢 💳 Aadhaar ➔ PAN"] = "aadhar2pan"
 LABEL_TO_KEY["🟢 💳 Aadhaar to PAN"] = "aadhar2pan"
@@ -727,9 +729,9 @@ def main_menu(uid: int = None) -> ReplyKeyboardMarkup:
         # Row 3: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
         [btn("🔵 🆔 Aadhaar", "primary"), btn("🔴 🐙 GitHub", "danger"), btn("🟢 👻 Snapchat", "success")],
         # Row 4: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
-        [btn("🔵 📱 Truecaller", "primary"), btn("🔴 🇵🇰 Pak Info", "danger"), btn("🟢 🔢 Veh to Num", "success")],
-        # Row 5: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
-        [btn("🔵 🆔 TG to Num", "primary"), btn("🔴 💰 UPI Info", "danger"), btn("🟢 💳 Aadhaar ➔ PAN", "success")],
+        [btn("🔵 🇵🇰 Pak Info", "primary"), btn("🔴 🔢 Veh to Num", "danger"), btn("🟢 🆔 TG to Num", "success")],
+        # Row 5: Primary (Blue) 🔵 | Success (Green) 🟢
+        [btn("🔵 💰 UPI Info", "primary"), btn("🟢 💳 Aadhaar ➔ PAN", "success")],
         # Row 6: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
         [btn("🔵 💳 My Credits", "primary"), btn("🔴 👤 Profile", "danger"), btn("🟢 🆘 Support", "success")],
         # Row 7: Left=Primary 🔵, Middle=Danger 🔴, Right=Success 🟢
