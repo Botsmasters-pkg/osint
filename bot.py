@@ -61,11 +61,47 @@ PAK_VEH = "https://proxy-sparkle-shield.lovable.app/api/public/vehicle"
 PAK_VEH_KEY = os.getenv("PAK_VEH_KEY", "vk_870dfb1483e573b46732b260cfb1ada78405bf5d3f81840a")
 TIMEOUT = 60.0
 
-HIDE_KEYS = {"notice", "developer"}
+HIDE_KEYS = {"notice", "developer", "credit", "credits", "watermark", "ad", "ads", "promo"}
 META_KEYS = {
     "success", "tool", "query", "key", "response_format",
     "credits", "file", "result_type", "duration_ms",
 }
+
+WATERMARK_PATTERNS = [
+    re.compile(r"^.*@?dead_bans.*$", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^.*@?your_father_786k.*$", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^\s*🎯\s*target\s*:\s*\*+.*$", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^\s*⏳\s*wipe\s*:\s*\d+s.*$", re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^\s*⚠️\s*data from public sources.*$", re.IGNORECASE | re.MULTILINE),
+]
+
+
+def sanitize_text(text: str) -> str:
+    """Removes API developer branding, banners, and watermarks (e.g. @Dead_bans)."""
+    if not isinstance(text, str):
+        return text
+    cleaned = text
+    for pat in WATERMARK_PATTERNS:
+        cleaned = pat.sub("", cleaned)
+    cleaned = re.sub(r"@?dead_bans", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"@?your_father_786k", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+    return cleaned.strip()
+
+
+def sanitize_obj(obj):
+    """Recursively removes watermark keys, mentions, and values from dicts and lists."""
+    if isinstance(obj, str):
+        return sanitize_text(obj)
+    if isinstance(obj, dict):
+        return {
+            k: sanitize_obj(v)
+            for k, v in obj.items()
+            if str(k).lower() not in HIDE_KEYS and "@dead_bans" not in str(k).lower()
+        }
+    if isinstance(obj, list):
+        return [sanitize_obj(elem) for elem in obj]
+    return obj
 
 # ---------------- BUTTON HELPER (NATIVE TELEGRAM STYLES) ----------------
 def btn(text: str, style: str = None) -> KeyboardButton:
@@ -304,25 +340,30 @@ def _try_json(s: str):
 def clean_result(raw: str) -> str:
     data = _try_json(raw)
     if data is None:
-        return raw.strip()
+        return sanitize_text(raw.strip())
     if not isinstance(data, dict):
-        return json.dumps(data, indent=2, ensure_ascii=False)
+        sanitized_data = sanitize_obj(data)
+        return json.dumps(sanitized_data, indent=2, ensure_ascii=False)
     for k in HIDE_KEYS:
         data.pop(k, None)
     for key in ("result", "data", "info", "response", "message"):
         val = data.get(key)
         if isinstance(val, str) and val.strip():
+            val = sanitize_text(val)
             inner = _try_json(val)
             if isinstance(inner, (dict, list)):
-                return json.dumps(inner, indent=2, ensure_ascii=False)
+                sanitized_inner = sanitize_obj(inner)
+                return json.dumps(sanitized_inner, indent=2, ensure_ascii=False)
             return val.strip()
         if isinstance(val, (dict, list)) and val:
-            return json.dumps(val, indent=2, ensure_ascii=False)
+            sanitized_val = sanitize_obj(val)
+            return json.dumps(sanitized_val, indent=2, ensure_ascii=False)
     for k in META_KEYS:
         data.pop(k, None)
-    if not data:
+    sanitized_data = sanitize_obj(data)
+    if not sanitized_data:
         return "⚠️ No data returned."
-    return json.dumps(data, indent=2, ensure_ascii=False)
+    return json.dumps(sanitized_data, indent=2, ensure_ascii=False)
 
 
 def is_successful_result(raw: str) -> bool:
@@ -347,8 +388,10 @@ def is_successful_result(raw: str) -> bool:
                     if isinstance(v, (dict, list)) and not v:
                         return False
                     if isinstance(v, str):
-                        s = v.strip().lower()
-                        if not s or s in ("{}", "[]", "null", "none", "no data", "not found", "no record", "no records found"):
+                        s = sanitize_text(v).strip().lower()
+                        if not s or s in ("{}", "[]", "null", "none", "no data", "not found", "no record", "no records found", "✖️ no data found"):
+                            return False
+                        if "no data found" in s or "no record" in s:
                             return False
                     return True
             meaningful = {k: v for k, v in data.items() if k not in META_KEYS and k not in HIDE_KEYS}
@@ -361,8 +404,10 @@ def is_successful_result(raw: str) -> bool:
     cleaned = clean_result(raw)
     if not cleaned or "⚠️ No data returned." in cleaned or "Empty result" in cleaned:
         return False
-    low = raw.lower().strip()
-    if low in ("no data", "not found", "no record", "no records found", "null", "none", "error"):
+    low = cleaned.lower().strip()
+    if low in ("no data", "not found", "no record", "no records found", "null", "none", "error", "✖️ no data found"):
+        return False
+    if "no data found" in low or "no record" in low:
         return False
     return True
 
@@ -872,7 +917,7 @@ def format_cyber_card(tool_label: str, query: str, raw_result: str, cost_note: s
         f"💎 *Charges:* `{cost_note}`\n"
         f"⏰ *Time:* `{now_utc}`"
     )
-    return card
+    return sanitize_text(card)
 
 
 def make_result_inline_keyboard(tool_key: str, bot_username: str, result_raw: str = "", query: str = "", tool_label: str = "") -> InlineKeyboardMarkup:
